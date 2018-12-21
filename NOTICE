@@ -1,0 +1,54 @@
+INTER-IoT Interoperability of Heterogeneous IoT Platforms
+INTER-IoT N2N-ryu
+
+This project has received funding from the European Union's Horizon 2020 
+research and innovation programme under grant agreement No 687283. 
+
+Copyright 2016-2018 Universitat Politècnica de València
+
+Copyright 2016-2018 Università della Calabria
+
+Copyright 2016-2018 Prodevelop, SL
+
+Copyright 2016-2018 Technische Universiteit Eindhoven
+
+Copyright 2016-2018 Fundación de la Comunidad Valenciana para la 
+Investigación, Promoción y Estudios Comerciales de Valenciaport
+
+Copyright 2016-2018 Rinicom Ltd
+
+Copyright 2016-2018 Association pour le développement de la formation 
+professionnelle dans le transport
+
+Copyright 2016-2018 Noatum Ports Valenciana, S.A.U.
+
+Copyright 2016-2018 XLAB razvoj programske opreme in svetovanje d.o.o.
+
+Copyright 2016-2018 Systems Research Institute Polish Academy of Sciences
+
+Copyright 2016-2018 Azienda Sanitaria Locale TO5
+
+Copyright 2016-2018 Alessandro Bassi Consulting SARL
+
+Copyright 2016-2018 Neways Technologies B.V.
+
+I. Included Software
+
+  Ryu; Ryu is a component-based SDN framework (https://github.com/osrg/ryu)                                     distributed under    Apache License 2.0
+
+II. Used Software
+
+  Tox; Command line driven CI frontend and development task automation tool (https://github.com/tox-dev/tox)    distributed under    MIT License
+  Pylint; code analysis tool (https://github.com/PyCQA/pylint)                                                  distributed under    GNU General Public License v2.0
+  Eventlet; concurrent networking library (https://github.com/eventlet/eventlet/)                               distributed under    MIT License
+  Routes;  URL recognition and generation system (https://github.com/bbangert/routes)                           distributed under    MIT License
+  Webob; WSGI request and response objects (https://github.com/Pylons/webob)                                    distributed under    MIT License
+  Paramiko; SSHv2 protocol library (https://github.com/paramiko/paramiko)                                       distributed under    GNU Lesser General Public License v2.1
+  Netaddr; network address manipulation library (https://github.com/drkjam/netaddr)                             distributed under    The BSD 3-Clause License with exceptions
+  Lxml; XML and HTML processing library (https://github.com/lxml/lxml)                                          distributed under    The BSD 3-Clause License with exceptions
+  Oslo-config; OpenStack library for config (https://github.com/openstack/oslo.config)                          distributed under    Apache License 2.0
+  Msgpack; MessagePack serializer implementation (https://github.com/msgpack/msgpack-python)                    distributed under    Apache License 2.0
+
+III. License Summary
+
+- Apache License 2.0
