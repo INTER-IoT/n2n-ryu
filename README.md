@@ -6,7 +6,7 @@ For that purpose INTER-IoT project develop a customized controller to manage SDN
 the is based in the Ryu controller. Ryu is a component-based software defined networking framework that supports the main protocols for managing network
 devices, such as OpenFlow, OVSDB, OF-config, etc.
 
-Ryu provides software components with well defined API that has been modified in order to fulfil ITER-IoT requirements
+Ryu provides software components with well defined API that has been modified in order to fulfil INTER-IoT requirements
 and to communicate with INTER-FW as the main access portal to every interoperability solution.
 
 ## Quick Start
