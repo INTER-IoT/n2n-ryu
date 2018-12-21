@@ -1,0 +1,68 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css/reset.css">
+        <link rel="stylesheet" href="/css/normalize.css">
+        <link rel="stylesheet" href="/css/vis.min.css">
+        <link rel="stylesheet" href="/css/main.css">
+        <script src="/js/vis.min.js"></script>
+        <script src="/js/vue.js"></script>
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/ryu.helper.js"></script>
+        <style>
+            #statistics{
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body class="main">
+        <div id="statistics">            
+            <h1 class="title" style="margin-left: 100px">Statistics</h1>
+            <div class="statistics-container" >
+                <table class="switches-table" id="port-view">
+                  <thead>
+                    <tr>
+                      <td><strong>Port ID</strong></td>                                   
+                      <td><strong>Name</strong></td> 
+                      <td><strong>HW Address</strong></td> 
+                      <td></td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="port in ports">
+                      <td>{{port.port_no}}</td>                      
+                      <td>{{port.name}}</td>                      
+                      <td>{{port.hw_addr}}</td>
+                      <td><a :href="'port_statistics_2.html?sw='+dpid+'&port='+port.port_no">More Statistics</a></td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+    <script>
+     // var dpid = window.location.hash.substr(1);
+     // console.log(dpid);
+      var dpid = getParameterByName('sw');
+      var tablePortView = new Vue({
+        el:"#port-view",
+        data: {
+          ports: []
+        }
+      });
+
+      var init = new Vue({ 
+        created: function(){ //Function called when the instance is created
+          getSwitchPortDescription(dpid, portModel => {
+            tablePortView.ports = portModel;
+          });
+        },  
+      });
+    </script>
+</html>

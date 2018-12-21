@@ -1,19 +1,37 @@
-# Copyright (C) 2013 Nippon Telegraph and Telephone Corporation.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# -*- coding: utf-8 -*-
+#  Copyright 2016-2018 Universitat Politècnica de València
+#  Copyright 2016-2018 Università della Calabria
+#  Copyright 2016-2018 Prodevelop, SL
+#  Copyright 2016-2018 Technische Universiteit Eindhoven
+#  Copyright 2016-2018 Fundación de la Comunidad Valenciana para la 
+#  Investigación, Promoción y Estudios Comerciales de Valenciaport
+#  Copyright 2016-2018 Rinicom Ltd
+#  Copyright 2016-2018 Association pour le développement de la formation 
+#  professionnelle dans le transport
+#  Copyright 2016-2018 Noatum Ports Valenciana, S.A.U.
+#  Copyright 2016-2018 XLAB razvoj programske opreme in svetovanje d.o.o.
+#  Copyright 2016-2018 Systems Research Institute Polish Academy of Sciences
+#  Copyright 2016-2018 Azienda Sanitaria Locale TO5
+#  Copyright 2016-2018 Alessandro Bassi Consulting SARL
+#  Copyright 2016-2018 Neways Technologies B.V.
+#  
+#  See the NOTICE file distributed with this work for additional information
+#  regarding copyright ownership.
+#  
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#  
+#      http://www.apache.org/licenses/LICENSE-2.0
+#  
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
 import json
+import logging
 
 from ryu.app.wsgi import ControllerBase
 from ryu.app.wsgi import Response
@@ -24,28 +42,9 @@ from ryu.lib import dpid as dpid_lib
 from ryu.topology.api import get_switch, get_link, get_host
 
 # REST API for switch configuration
-#
-# get all the switches
-# GET /v1.0/topology/switches
-#
-# get the switch
-# GET /v1.0/topology/switches/<dpid>
-#
-# get all the links
-# GET /v1.0/topology/links
-#
-# get the links of a switch
-# GET /v1.0/topology/links/<dpid>
-#
-# get all the hosts
-# GET /v1.0/topology/hosts
-#
-# get the hosts of a switch
-# GET /v1.0/topology/hosts/<dpid>
-#
-# where
 # <dpid>: datapath id in 16 hex
 
+LOG = logging.getLogger('ryu.app.rest_topology')
 
 class TopologyAPI(app_manager.RyuApp):
     _CONTEXTS = {
@@ -54,7 +53,6 @@ class TopologyAPI(app_manager.RyuApp):
 
     def __init__(self, *args, **kwargs):
         super(TopologyAPI, self).__init__(*args, **kwargs)
-
         wsgi = kwargs['wsgi']
         wsgi.register(TopologyController, {'topology_api_app': self})
 
@@ -77,7 +75,7 @@ class TopologyController(ControllerBase):
     @route('topology', '/v1.0/topology/links',
            methods=['GET'])
     def list_links(self, req, **kwargs):
-        return self._links(req, **kwargs)
+       	return self._links(req, **kwargs)
 
     @route('topology', '/v1.0/topology/links/{dpid}',
            methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
@@ -100,6 +98,7 @@ class TopologyController(ControllerBase):
             dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
         switches = get_switch(self.topology_api_app, dpid)
         body = json.dumps([switch.to_dict() for switch in switches])
+        LOG.info('switches request/Response')
         return Response(content_type='application/json', body=body)
 
     def _links(self, req, **kwargs):
@@ -107,6 +106,10 @@ class TopologyController(ControllerBase):
         if 'dpid' in kwargs:
             dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
         links = get_link(self.topology_api_app, dpid)
+        print "links:"
+        for link in links:
+            print "%s" % link
+        print "-- links"
         body = json.dumps([link.to_dict() for link in links])
         return Response(content_type='application/json', body=body)
 
@@ -115,5 +118,9 @@ class TopologyController(ControllerBase):
         if 'dpid' in kwargs:
             dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
         hosts = get_host(self.topology_api_app, dpid)
+        print "Hosts:"
+        for host in hosts:
+            print "%s" % host
+        print "-- hosts"
         body = json.dumps([host.to_dict() for host in hosts])
         return Response(content_type='application/json', body=body)

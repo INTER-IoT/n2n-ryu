@@ -1,0 +1,98 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css/reset.css">
+        <link rel="stylesheet" href="/css/normalize.css">
+        <link rel="stylesheet" href="/css/vis.min.css">
+        <link rel="stylesheet" href="/css/main.css">
+        <script src="/js/vis.min.js"></script>
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/ryu.topology.interiot.js"></script>
+        <style>
+            #qos{
+                width: 100%;
+                height: 100%;
+            }
+            #queue_form {
+                display: none;
+            }
+            #left {
+                float: left;
+            }
+            #right {
+                float: right;
+            }
+            #rule_form {
+                display: none;
+                float: right;
+            }
+        </style>
+    </head>
+    <body class="main">
+        <div id="qos">
+            <h1 class="title" style="margin-left: 100px">Quality of Service (QoS)</h1>
+            <div class="qos-container" id="mynetwork">
+                <table class="switches-table">
+                    <tr>
+                    <td><strong>Switches</strong></td>
+                    <td><strong>Number of rules</strong></td> 
+                    <td><strong>Number of queues</strong></td> 
+                    <td><strong>Number of meters</strong></td> 
+                    </tr>
+                </table>
+                <div>
+                    <select class="select" id="select" name="switchSelector" >
+                        <option selected=""> Select a Switch</option>
+                    </select>
+                    <table class="switch-table"> <!--populated on click--> 
+                    </table>
+                </div>
+                <div id="left">
+                    <input id="add-queue" type="button" value="Add queue">
+                    <input id="del-queues" type="button" value="Delete all queues">
+                    <div id="queue_form">
+                        <form action="#" id="form" method="post" name="form">
+                        <h2>Settings</h2>
+                        <p><input id="port_name" name="port_name" placeholder="port_name (optional)" type="text"></p>
+                        <p><input id="type" name="type" placeholder="type [linux-htb | linux-hfsc]" type="text"></p>
+                        <p><input id="max_rate" name="max_rate" placeholder="max_rate [Bandwidth(bps)]" type="text"></p>
+                        <p><input id="min_rate" name="min_rate" placeholder="min_rate [Bandwidth(bps)]" type="text"></p>
+                        <p><a href="javascript:%20check_and_add_queue()" id="submit">add queue</a></p>
+                        </form>
+                    </div>
+                </div>
+                <div id="right">
+                    <input id="add-rule" type="button" value="Add rule">
+                    <input id="del-rules" type="button" value="Delete all rules">
+                    <div id="rule_form">
+                        <form action="#" id="form" method="post" name="form">
+                        <h2>Settings (leave unused fields blank)</h2>
+                        <p><input id="priority" name="priority" placeholder="priority: [0-65535]" type="text"></p>
+                        <h2>Match</h2>
+                        <p><input id="in_port" name="in_port" placeholder="in_port: [0-65535]" type="text"></p>
+                        <p><input id="dl_src" name="dl_src" placeholder="dl_src:'<xx:xx:xx:xx:xx:xx>'" type="text"></p>
+                        <p><input id="dl_dst" name="dl_dst" placeholder="dl_dst:'<xx:xx:xx:xx:xx:xx>'" type="text"></p>
+                        <p><input id="dl_type" name="dl_type" placeholder="dl_type:[ARP|IPv4|LLDP]" type="text"></p>
+                        <p><input id="nw_src" name="nw_src" placeholder="nw_src:”<xxx.xxx.xxx.xxx/xx>”" type="text"></p>
+                        <p><input id="nw_dst" name="nw_dst" placeholder="nw_dst:”<xxx.xxx.xxx.xxx/xx>”" type="text"></p>
+                        <p><input id="nw_proto" name="nw_proto" placeholder="nw_proto: [“TCP”|“UDP”|“ICMP”]" type="text"></p>
+                        <p><input id="tp_src" name="tp_src" placeholder="tp_src: [0-65535]" type="text"></p>
+                        <p><input id="tp_dst" name="tp_dst" placeholder="tp_dst: [0-65535]" type="text"></p>
+                        <p><input id="ip_dscp" name="ip_dscp" placeholder="ip_dscp: [0-63]" type="text"></p>
+                        <h2>Action</h2>
+                        <p><input id="mark" name="mark" placeholder="mark [0-63]" type="text"></p>
+                        <p><input id="meter" name="meter" placeholder="meter [Meter ID]" type="text"></p>
+                        <p><input id="queue" name="queue" placeholder="queue  [Queue ID]" type="text"></p>
+                        <p><a href="javascript:%20check_and_add_rule()" id="submit">add rule</a></p>
+                        </form>
+                    </div>
+                </div>
+            </div> 
+        <script src="main.js?n=1"></script> <!--n=1 to force reload-->
+    </body>
+</html>

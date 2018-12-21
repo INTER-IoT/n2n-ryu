@@ -238,7 +238,7 @@ def send_msg(dp, msg, logger=None):
     #                format rules in the log_msg
     log_msg = ('Sending message with xid(%x) to '
                'datapath(' + dpid._DPID_FMT + '): %s')
-    log.debug(log_msg, msg.xid, dp.id, msg)
+    #log.debug(log_msg, msg.xid, dp.id, msg)
     dp.send_msg(msg)
 
 

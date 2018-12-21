@@ -1,17 +1,34 @@
-# Copyright (C) 2012 Nippon Telegraph and Telephone Corporation.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# -*- coding: utf-8 -*-
+#  Copyright 2016-2018 Universitat Politècnica de València
+#  Copyright 2016-2018 Università della Calabria
+#  Copyright 2016-2018 Prodevelop, SL
+#  Copyright 2016-2018 Technische Universiteit Eindhoven
+#  Copyright 2016-2018 Fundación de la Comunidad Valenciana para la 
+#  Investigación, Promoción y Estudios Comerciales de Valenciaport
+#  Copyright 2016-2018 Rinicom Ltd
+#  Copyright 2016-2018 Association pour le développement de la formation 
+#  professionnelle dans le transport
+#  Copyright 2016-2018 Noatum Ports Valenciana, S.A.U.
+#  Copyright 2016-2018 XLAB razvoj programske opreme in svetovanje d.o.o.
+#  Copyright 2016-2018 Systems Research Institute Polish Academy of Sciences
+#  Copyright 2016-2018 Azienda Sanitaria Locale TO5
+#  Copyright 2016-2018 Alessandro Bassi Consulting SARL
+#  Copyright 2016-2018 Neways Technologies B.V.
+#  
+#  See the NOTICE file distributed with this work for additional information
+#  regarding copyright ownership.
+#  
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#  
+#      http://www.apache.org/licenses/LICENSE-2.0
+#  
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
 import logging
 import json
@@ -48,148 +65,17 @@ supported_ofctl = {
     ofproto_v1_5.OFP_VERSION: ofctl_v1_5,
 }
 
-# REST API
-#
-
-# Retrieve the switch stats
-#
-# get the list of all switches
-# GET /stats/switches
-#
-# get the desc stats of the switch
-# GET /stats/desc/<dpid>
-#
-# get flows desc stats of the switch
-# GET /stats/flowdesc/<dpid>
-#
-# get flows desc stats of the switch filtered by the fields
-# POST /stats/flowdesc/<dpid>
-#
-# get flows stats of the switch
-# GET /stats/flow/<dpid>
-#
-# get flows stats of the switch filtered by the fields
-# POST /stats/flow/<dpid>
-#
-# get aggregate flows stats of the switch
-# GET /stats/aggregateflow/<dpid>
-#
-# get aggregate flows stats of the switch filtered by the fields
-# POST /stats/aggregateflow/<dpid>
-#
-# get table stats of the switch
-# GET /stats/table/<dpid>
-#
-# get table features stats of the switch
-# GET /stats/tablefeatures/<dpid>
-#
-# get ports stats of the switch
-# GET /stats/port/<dpid>[/<port>]
-# Note: Specification of port number is optional
-#
-# get queues stats of the switch
-# GET /stats/queue/<dpid>[/<port>[/<queue_id>]]
-# Note: Specification of port number and queue id are optional
-#       If you want to omitting the port number and setting the queue id,
-#       please specify the keyword "ALL" to the port number
-#       e.g. GET /stats/queue/1/ALL/1
-#
-# get queues config stats of the switch
-# GET /stats/queueconfig/<dpid>[/<port>]
-# Note: Specification of port number is optional
-#
-# get queues desc stats of the switch
-# GET /stats/queuedesc/<dpid>[/<port>[/<queue_id>]]
-# Note: Specification of port number and queue id are optional
-#       If you want to omitting the port number and setting the queue id,
-#       please specify the keyword "ALL" to the port number
-#       e.g. GET /stats/queuedesc/1/ALL/1
-#
-# get meter features stats of the switch
-# GET /stats/meterfeatures/<dpid>
-#
-# get meter config stats of the switch
-# GET /stats/meterconfig/<dpid>[/<meter_id>]
-# Note: Specification of meter id is optional
-#
-# get meter desc stats of the switch
-# GET /stats/meterdesc/<dpid>[/<meter_id>]
-# Note: Specification of meter id is optional
-#
-# get meters stats of the switch
-# GET /stats/meter/<dpid>[/<meter_id>]
-# Note: Specification of meter id is optional
-#
-# get group features stats of the switch
-# GET /stats/groupfeatures/<dpid>
-#
-# get groups desc stats of the switch
-# GET /stats/groupdesc/<dpid>[/<group_id>]
-# Note: Specification of group id is optional (OpenFlow 1.5 or later)
-#
-# get groups stats of the switch
-# GET /stats/group/<dpid>[/<group_id>]
-# Note: Specification of group id is optional
-#
-# get ports description of the switch
-# GET /stats/portdesc/<dpid>[/<port_no>]
-# Note: Specification of port number is optional (OpenFlow 1.5 or later)
-
-# Update the switch stats
-#
-# add a flow entry
-# POST /stats/flowentry/add
-#
-# modify all matching flow entries
-# POST /stats/flowentry/modify
-#
-# modify flow entry strictly matching wildcards and priority
-# POST /stats/flowentry/modify_strict
-#
-# delete all matching flow entries
-# POST /stats/flowentry/delete
-#
-# delete flow entry strictly matching wildcards and priority
-# POST /stats/flowentry/delete_strict
-#
-# delete all flow entries of the switch
-# DELETE /stats/flowentry/clear/<dpid>
-#
-# add a meter entry
-# POST /stats/meterentry/add
-#
-# modify a meter entry
-# POST /stats/meterentry/modify
-#
-# delete a meter entry
-# POST /stats/meterentry/delete
-#
-# add a group entry
-# POST /stats/groupentry/add
-#
-# modify a group entry
-# POST /stats/groupentry/modify
-#
-# delete a group entry
-# POST /stats/groupentry/delete
-#
-# modify behavior of the physical port
-# POST /stats/portdesc/modify
-#
-# modify role of controller
-# POST /stats/role
-#
-#
-# send a experimeter message
-# POST /stats/experimenter/<dpid>
-
-
 class CommandNotFoundError(RyuException):
     message = 'No such command : %(cmd)s'
 
-
 class PortNotFoundError(RyuException):
     message = 'No such port info: %(port_no)s'
+
+class TableNotFoundError(RyuException):
+    message = 'No such table info: %(table_id)s'
+
+class FlowNotFoundError(RyuException):
+    message = 'No such table info: %(flow_id)s'
 
 
 def stats_method(method):
@@ -229,7 +115,7 @@ def stats_method(method):
 
 
 def command_method(method):
-    def wrapper(self, req, *args, **kwargs):
+    def wrapper(self, req, dpid, *args, **kwargs):
         # Parse request json body
         try:
             if req.body:
@@ -244,18 +130,12 @@ def command_method(method):
             LOG.exception('Invalid syntax: %s', req.body)
             return Response(status=400)
 
-        # Get datapath_id from request parameters
-        dpid = body.get('dpid', None)
-        if not dpid:
-            try:
-                dpid = kwargs.pop('dpid')
-            except KeyError:
-                LOG.exception('Cannot get dpid from request parameters')
-                return Response(status=400)
-
         # Get datapath instance from DPSet
         try:
-            dp = self.dpset.get(int(str(dpid), 0))
+            if dpid:
+                dp = self.dpset.get(int(str(dpid), 0))
+            else:
+                LOG.error('No DPID specified in URL: %s', dpid)
         except ValueError:
             LOG.exception('Invalid dpid: %s', dpid)
             return Response(status=400)
@@ -286,6 +166,12 @@ def command_method(method):
             LOG.exception(e.message)
             return Response(status=404)
         except PortNotFoundError as e:
+            LOG.exception(e.message)
+            return Response(status=404)
+        except TableNotFoundError as e:
+            LOG.exception(e.message)
+            return Response(status=404)
+        except FlowNotFoundError as e:
             LOG.exception(e.message)
             return Response(status=404)
 
@@ -420,20 +306,12 @@ class StatsController(ControllerBase):
     def get_role(self, req, dp, ofctl, **kwargs):
         return ofctl.get_role(dp, self.waiters)
 
-    @command_method
-    def mod_flow_entry(self, req, dp, ofctl, flow, cmd, **kwargs):
-        cmd_convert = {
-            'add': dp.ofproto.OFPFC_ADD,
-            'modify': dp.ofproto.OFPFC_MODIFY,
-            'modify_strict': dp.ofproto.OFPFC_MODIFY_STRICT,
-            'delete': dp.ofproto.OFPFC_DELETE,
-            'delete_strict': dp.ofproto.OFPFC_DELETE_STRICT,
-        }
-        mod_cmd = cmd_convert.get(cmd, None)
-        if mod_cmd is None:
-            raise CommandNotFoundError(cmd=cmd)
 
-        ofctl.mod_flow_entry(dp, flow, mod_cmd)
+    @command_method
+    def add_flow_entry(self, req, dp, ofctl, flow, **kwargs):
+        if flow:
+            LOG.error('FLOW TO BE ADDED %r', flow)
+        ofctl.mod_flow_entry(dp, flow, dp.ofproto.OFPFC_ADD)
 
     @command_method
     def delete_flow_entry(self, req, dp, ofctl, flow, **kwargs):
@@ -441,21 +319,23 @@ class StatsController(ControllerBase):
             flow = {}
         else:
             flow = {'table_id': dp.ofproto.OFPTT_ALL}
-
         ofctl.mod_flow_entry(dp, flow, dp.ofproto.OFPFC_DELETE)
 
     @command_method
-    def mod_meter_entry(self, req, dp, ofctl, meter, cmd, **kwargs):
-        cmd_convert = {
-            'add': dp.ofproto.OFPMC_ADD,
-            'modify': dp.ofproto.OFPMC_MODIFY,
-            'delete': dp.ofproto.OFPMC_DELETE,
-        }
-        mod_cmd = cmd_convert.get(cmd, None)
-        if mod_cmd is None:
-            raise CommandNotFoundError(cmd=cmd)
+    def mod_flow_entry(self, req, dp, ofctl, flow, **kwargs):
+        ofctl.mod_flow_entry(dp, flow, dp.ofproto.OFPFC_MODIFY_STRICT) #/flow/{dpid}'
 
-        ofctl.mod_meter_entry(dp, meter, mod_cmd)
+    @command_method
+    def del_meter_entry(self, req, dp, ofctl, meter, **kwargs):
+        ofctl.mod_meter_entry(dp, meter, dp.ofproto.OFPFC_DELETE)
+
+    @command_method
+    def add_meter_entry(self, req, dp, ofctl, meter, **kwargs):
+        ofctl.mod_meter_entry(dp, meter, dp.ofproto.OFPFC_ADD)
+
+    @command_method
+    def mod_meter_entry(self, req, dp, ofctl, meter, **kwargs):
+        ofctl.mod_meter_entry(dp, meter, dp.ofproto.OFPFC_MODIFY)
 
     @command_method
     def mod_group_entry(self, req, dp, ofctl, group, cmd, **kwargs):
@@ -532,28 +412,28 @@ class RestStatsApi(app_manager.RyuApp):
                        controller=StatsController, action='get_desc_stats',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/flowdesc/{dpid}'
+        uri = path + '/flow/desc/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_flow_stats',
-                       conditions=dict(method=['GET', 'POST']))
+                       conditions=dict(method=['GET']))  #POST (to filter by field) REMOVED
 
         uri = path + '/flow/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_flow_stats',
-                       conditions=dict(method=['GET', 'POST']))
+                       conditions=dict(method=['GET'])) #POST (to filter by field) REMOVED
 
         uri = path + '/aggregateflow/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController,
                        action='get_aggregate_flow_stats',
-                       conditions=dict(method=['GET', 'POST']))
+                       conditions=dict(method=['GET'])) #POST (to filter by field) REMOVED
 
         uri = path + '/table/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_table_stats',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/tablefeatures/{dpid}'
+        uri = path + '/table/features/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_table_features',
                        conditions=dict(method=['GET']))
@@ -583,52 +463,52 @@ class RestStatsApi(app_manager.RyuApp):
                        controller=StatsController, action='get_queue_stats',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/queueconfig/{dpid}'
+        uri = path + '/queue/config/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_queue_config',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/queueconfig/{dpid}/{port}'
+        uri = path + '/queue/config/{dpid}/{port}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_queue_config',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/queuedesc/{dpid}'
+        uri = path + '/queue/desc/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_queue_desc',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/queuedesc/{dpid}/{port}'
+        uri = path + '/queue/desc/{dpid}/{port}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_queue_desc',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/queuedesc/{dpid}/{port}/{queue}'
+        uri = path + '/queue/desc/{dpid}/{port}/{queue}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_queue_desc',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/meterfeatures/{dpid}'
+        uri = path + '/meter/features/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_meter_features',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/meterconfig/{dpid}'
+        uri = path + '/meter/config/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_meter_config',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/meterconfig/{dpid}/{meter_id}'
+        uri = path + '/meter/config/{dpid}/{meter_id}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_meter_config',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/meterdesc/{dpid}'
+        uri = path + '/meter/desc/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_meter_desc',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/meterdesc/{dpid}/{meter_id}'
+        uri = path + '/meter/desc/{dpid}/{meter_id}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_meter_desc',
                        conditions=dict(method=['GET']))
@@ -643,17 +523,17 @@ class RestStatsApi(app_manager.RyuApp):
                        controller=StatsController, action='get_meter_stats',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/groupfeatures/{dpid}'
+        uri = path + '/group/features/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_group_features',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/groupdesc/{dpid}'
+        uri = path + '/group/desc/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_group_desc',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/groupdesc/{dpid}/{group_id}'
+        uri = path + '/group/desc/{dpid}/{group_id}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_group_desc',
                        conditions=dict(method=['GET']))
@@ -668,12 +548,12 @@ class RestStatsApi(app_manager.RyuApp):
                        controller=StatsController, action='get_group_stats',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/portdesc/{dpid}'
+        uri = path + '/port/desc/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_port_desc',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/portdesc/{dpid}/{port_no}'
+        uri = path + '/port/desc/{dpid}/{port_no}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='get_port_desc',
                        conditions=dict(method=['GET']))
@@ -683,20 +563,41 @@ class RestStatsApi(app_manager.RyuApp):
                        controller=StatsController, action='get_role',
                        conditions=dict(method=['GET']))
 
-        uri = path + '/flowentry/{cmd}'
+        #n2n/switches/{switchId}/tables/{tableId}/flows/{flowId} 
+        uri = path + '/flow/{dpid}'
+        mapper.connect('stats', uri,
+                       controller=StatsController, action='add_flow_entry',
+                       conditions=dict(method=['POST']))
+
+        uri = path + '/flow/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='mod_flow_entry',
-                       conditions=dict(method=['POST']))
+                       conditions=dict(method=['PUT']))
 
-        uri = path + '/flowentry/clear/{dpid}'
+        uri = path + '/flow/{dpid}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='delete_flow_entry',
-                       conditions=dict(method=['DELETE']))
+                       conditions=dict(method=['DELETE'])) 
 
-        uri = path + '/meterentry/{cmd}'
+        #uri = path + '/flowentry/clear/{dpid}'
+        #mapper.connect('stats', uri,
+        #               controller=StatsController, action='delete_flow_entry',
+        #               conditions=dict(method=['DELETE']))
+
+        uri = path + '/meter/{dpid}'
+        mapper.connect('stats', uri,
+                       controller=StatsController, action='add_meter_entry',
+                       conditions=dict(method=['POST']))
+
+        uri = path + '/meter/{dpid}/{meter_id}'
         mapper.connect('stats', uri,
                        controller=StatsController, action='mod_meter_entry',
-                       conditions=dict(method=['POST']))
+                       conditions=dict(method=['PUT']))
+
+        uri = path + '/meter/{dpid}/{meter_id}'
+        mapper.connect('stats', uri,
+                       controller=StatsController, action='del_meter_entry',
+                       conditions=dict(method=['DELETE']))
 
         uri = path + '/groupentry/{cmd}'
         mapper.connect('stats', uri,

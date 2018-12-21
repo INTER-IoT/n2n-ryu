@@ -102,7 +102,10 @@ class OVSBridge(object):
         self.br_name = None
 
     def run_command(self, commands):
-        self.vsctl.run_command(commands, self.timeout, self.exception)
+        try:
+            self.vsctl.run_command(commands, self.timeout, self.exception)
+        except Exception as msg:
+                raise ValueError(msg)
 
     def init(self):
         if self.br_name is None:

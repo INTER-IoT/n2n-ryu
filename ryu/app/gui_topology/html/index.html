@@ -1,12 +1,31 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="./ryu.topology.css">
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-</head>
-<body>
-<h1>Ryu Topology Viewer</h1>
-<script src="./ryu.topology.js" charset="utf-8"></script>
-</body>
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css/reset.css">
+        <link rel="stylesheet" href="/css/normalize.css">
+        <link rel="stylesheet" href="/css/vis.min.css">
+        <link rel="stylesheet" href="/css/main.css">
+        <script src="/js/vis.min.js"></script>
+        <script src="/js/vue.js"></script>
+        <script src="/js/jquery.min.js"></script>
+    </head>
+    <body class="main-nav">  
+      <div>
+        <img src="./images/interiot_icon.svg"></img>
+        <div id="main">
+          <nav v-bind:class="active" v-on:click.prevent id="menu">
+            <a href="tabs/topology/index.html" class="topology" v-on:click="makeActive('topology')">Topology</a>
+            <a href="tabs/statistics/index.html" class="statistics" v-on:click="makeActive('statistics')">Statistics</a>
+            <!--<a v-bind:href="tabs/qos/index.html" class="qos" v-on:click="makeActive('qos')">Qos</a>
+            <a href="tabs/statistics/index.html" class="projects" v-on:click="makeActive('statistics')">Statistics</a>-->
+            <a href="tabs/qos/index.html" class="qos" v-on:click="makeActive('qos')">Qos</a>
+          </nav>
+        </div>
+      </div>
+    </body>
 </html>

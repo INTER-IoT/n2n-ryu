@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from ryu.base import app_manager
 from ryu.topology import event
 
+LOG = logging.getLogger('ryu.topology.api')
 
 def get_switch(app, dpid=None):
     rep = app.send_request(event.EventSwitchRequest(dpid))

@@ -1,0 +1,68 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css/reset.css">
+        <link rel="stylesheet" href="/css/normalize.css">
+        <link rel="stylesheet" href="/css/vis.min.css">
+        <link rel="stylesheet" href="/css/main.css">
+        <script src="/js/vis.min.js"></script>
+        <script src="/js/vue.js"></script>
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/ryu.helper.js"></script>
+        <style>
+            #statistics{
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body class="main">
+        <div id="statistics">            
+            <h1 class="title" style="margin-left: 100px">Statistics</h1>
+            <div class="statistics-container" >
+                <table class="switches-table" id="switches-view">
+                  <thread>
+                    <tr>
+                      <td><strong>Switch ID</strong></td>                                   
+                      <td><strong>Number of ports</strong></td> 
+                      <td><strong>Number of flows</strong></td> 
+                    </tr>
+                  </thread>
+                  <tbody>
+                    <tr v-for="node in switches">
+                      <td>{{node.dpid}}</td>                      
+                      <td><a :href="'port_statistics.html?sw='+node.dpid">{{node.port.length}}</a></td>                      
+                      <td><a :href="'flow_statistics.html?sw='+node.dpid">{{node.flows.length}}</td>
+                    </tr>
+                  </tbody>
+                    <!--<tr>
+                    <td><strong>Switches</strong></td>                                   
+                    <td><strong>Number of ports</strong></td> 
+                    <td><strong>Number of flows</strong></td> 
+                    </tr>-->
+                </table>
+            </div>
+        </div>
+    </body>
+    <script>
+      var switchesView = new Vue({
+        el:"#switches-view",
+        data: {
+          switches: []
+        }
+      });
+
+      var init = new Vue({ 
+        created: function(){ //Function called when the instance is created
+          getSwitchesData(switchesModel => {
+            switchesView.switches = switchesModel;
+          });
+        },  
+      });
+    </script>
+</html>

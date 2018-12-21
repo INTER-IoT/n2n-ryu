@@ -700,6 +700,7 @@ def get_meter_stats(dp, waiters, meter_id=None, to_user=True):
 
     stats = dp.ofproto_parser.OFPMeterStatsRequest(
         dp, 0, meter_id)
+    LOG.error('METER STATS %r', stats)
     msgs = []
     ofctl_utils.send_stats_request(dp, stats, waiters, msgs, LOG)
 
@@ -1111,9 +1112,14 @@ def mod_meter_entry(dp, meter, cmd):
                     rate, burst_size, experimenter))
         else:
             LOG.error('Unknown band type: %s', band_type)
-
-    meter_mod = dp.ofproto_parser.OFPMeterMod(
+    LOG.error('METER TO BE ADDED %r', meter)
+    try: 
+        meter_mod = dp.ofproto_parser.OFPMeterMod(
         dp, cmd, flags, meter_id, bands)
+        req = dp.ofproto_parser.OFPMeterStatsRequest(dp, 0, dp.ofproto.OFPM_ALL)
+        LOG.error('METER ADD RESULT %r', req)
+    except RuntimeError as e:
+        LOG.error('Error: %s', e)
 
     ofctl_utils.send_msg(dp, meter_mod, LOG)
 

@@ -980,11 +980,14 @@ class VSCtl(object):
 
     def _init_schema_helper(self):
         if self.schema_json is None:
-            self.schema_json = self._rpc_get_schema_json(
+            try:
+                self.schema_json = self._rpc_get_schema_json(
                 vswitch_idl.OVSREC_DB_NAME)
-            schema_helper = idl.SchemaHelper(None, self.schema_json)
-            schema_helper.register_all()
-            self.schema = schema_helper.get_idl_schema()
+                schema_helper = idl.SchemaHelper(None, self.schema_json)
+                schema_helper.register_all()
+                self.schema = schema_helper.get_idl_schema()
+            except IOError as e:
+                raise IOError(e)
         # LOG.debug('schema_json %s', schema_json)
         self.schema_helper = idl.SchemaHelper(None, self.schema_json)
 

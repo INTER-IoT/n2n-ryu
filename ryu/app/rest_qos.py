@@ -1,17 +1,34 @@
-# Copyright (C) 2014 Kiyonari Harigae <lakshmi at cloudysunny14 org>
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# -*- coding: utf-8 -*-
+#  Copyright 2016-2018 Universitat Politècnica de València
+#  Copyright 2016-2018 Università della Calabria
+#  Copyright 2016-2018 Prodevelop, SL
+#  Copyright 2016-2018 Technische Universiteit Eindhoven
+#  Copyright 2016-2018 Fundación de la Comunidad Valenciana para la 
+#  Investigación, Promoción y Estudios Comerciales de Valenciaport
+#  Copyright 2016-2018 Rinicom Ltd
+#  Copyright 2016-2018 Association pour le développement de la formation 
+#  professionnelle dans le transport
+#  Copyright 2016-2018 Noatum Ports Valenciana, S.A.U.
+#  Copyright 2016-2018 XLAB razvoj programske opreme in svetovanje d.o.o.
+#  Copyright 2016-2018 Systems Research Institute Polish Academy of Sciences
+#  Copyright 2016-2018 Azienda Sanitaria Locale TO5
+#  Copyright 2016-2018 Alessandro Bassi Consulting SARL
+#  Copyright 2016-2018 Neways Technologies B.V.
+#  
+#  See the NOTICE file distributed with this work for additional information
+#  regarding copyright ownership.
+#  
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#  
+#      http://www.apache.org/licenses/LICENSE-2.0
+#  
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
 
 import logging
@@ -36,6 +53,7 @@ from ryu.lib import ofctl_v1_0
 from ryu.lib import ofctl_v1_2
 from ryu.lib import ofctl_v1_3
 from ryu.lib.ovs import bridge
+from ryu.lib.ovs import vsctl
 from ryu.ofproto import ofproto_v1_0
 from ryu.ofproto import ofproto_v1_2
 from ryu.ofproto import ofproto_v1_3
@@ -43,145 +61,6 @@ from ryu.ofproto import ofproto_v1_3_parser
 from ryu.ofproto import ether
 from ryu.ofproto import inet
 
-
-# =============================
-#          REST API
-# =============================
-#
-#  Note: specify switch and vlan group, as follows.
-#   {switch-id} : 'all' or switchID
-#   {vlan-id}   : 'all' or vlanID
-#
-# about queue status
-#
-# get status of queue
-# GET /qos/queue/status/{switch-id}
-#
-# about queues
-# get a queue configurations
-# GET /qos/queue/{switch-id}
-#
-# set a queue to the switches
-# POST /qos/queue/{switch-id}
-#
-# request body format:
-#  {"port_name":"<name of port>",
-#   "type": "<linux-htb or linux-other>",
-#   "max-rate": "<int>",
-#   "queues":[{"max_rate": "<int>", "min_rate": "<int>"},...]}
-#
-#   Note: This operation override
-#         previous configurations.
-#   Note: Queue configurations are available for
-#         OpenvSwitch.
-#   Note: port_name is optional argument.
-#         If does not pass the port_name argument,
-#         all ports are target for configuration.
-#
-# delete queue
-# DELETE /qos/queue/{swtich-id}
-#
-#   Note: This operation delete relation of qos record from
-#         qos colum in Port table. Therefore,
-#         QoS records and Queue records will remain.
-#
-# about qos rules
-#
-# get rules of qos
-# * for no vlan
-# GET /qos/rules/{switch-id}
-#
-# * for specific vlan group
-# GET /qos/rules/{switch-id}/{vlan-id}
-#
-# set a qos rules
-#
-#   QoS rules will do the processing pipeline,
-#   which entries are register the first table (by default table id 0)
-#   and process will apply and go to next table.
-#
-# * for no vlan
-# POST /qos/{switch-id}
-#
-# * for specific vlan group
-# POST /qos/{switch-id}/{vlan-id}
-#
-#  request body format:
-#   {"priority": "<value>",
-#    "match": {"<field1>": "<value1>", "<field2>": "<value2>",...},
-#    "actions": {"<action1>": "<value1>", "<action2>": "<value2>",...}
-#   }
-#
-#  Description
-#    * priority field
-#     <value>
-#    "0 to 65533"
-#
-#   Note: When "priority" has not been set up,
-#         "priority: 1" is set to "priority".
-#
-#    * match field
-#     <field> : <value>
-#    "in_port" : "<int>"
-#    "dl_src"  : "<xx:xx:xx:xx:xx:xx>"
-#    "dl_dst"  : "<xx:xx:xx:xx:xx:xx>"
-#    "dl_type" : "<ARP or IPv4 or IPv6>"
-#    "nw_src"  : "<A.B.C.D/M>"
-#    "nw_dst"  : "<A.B.C.D/M>"
-#    "ipv6_src": "<xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/M>"
-#    "ipv6_dst": "<xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/M>"
-#    "nw_proto": "<TCP or UDP or ICMP or ICMPv6>"
-#    "tp_src"  : "<int>"
-#    "tp_dst"  : "<int>"
-#    "ip_dscp" : "<int>"
-#
-#    * actions field
-#     <field> : <value>
-#    "mark": <dscp-value>
-#    sets the IPv4 ToS/DSCP field to tos.
-#    "meter": <meter-id>
-#    apply meter entry
-#    "queue": <queue-id>
-#    register queue specified by queue-id
-#
-#   Note: When "actions" has not been set up,
-#         "queue: 0" is set to "actions".
-#
-# delete a qos rules
-# * for no vlan
-# DELETE /qos/rule/{switch-id}
-#
-# * for specific vlan group
-# DELETE /qos/{switch-id}/{vlan-id}
-#
-#  request body format:
-#   {"<field>":"<value>"}
-#
-#     <field>  : <value>
-#    "qos_id" : "<int>" or "all"
-#
-# about meter entries
-#
-# set a meter entry
-# POST /qos/meter/{switch-id}
-#
-#  request body format:
-#   {"meter_id": <int>,
-#    "bands":[{"action": "<DROP or DSCP_REMARK>",
-#              "flag": "<KBPS or PKTPS or BURST or STATS"
-#              "burst_size": <int>,
-#              "rate": <int>,
-#              "prec_level": <int>},...]}
-#
-# delete a meter entry
-# DELETE /qos/meter/{switch-id}
-#
-#  request body format:
-#   {"<field>":"<value>"}
-#
-#     <field>  : <value>
-#    "meter_id" : "<int>"
-#
 
 
 SWITCHID_PATTERN = dpid_lib.DPID_PATTERN + r'|all'
@@ -211,6 +90,7 @@ REST_DL_TYPE = 'dl_type'
 REST_DL_TYPE_ARP = 'ARP'
 REST_DL_TYPE_IPV4 = 'IPv4'
 REST_DL_TYPE_IPV6 = 'IPv6'
+REST_DL_TYPE_LLDP = 'lldp' 
 REST_DL_VLAN = 'dl_vlan'
 REST_SRC_IP = 'nw_src'
 REST_DST_IP = 'nw_dst'
@@ -247,9 +127,15 @@ VLANID_MIN = 2
 VLANID_MAX = 4094
 COOKIE_SHIFT_VLANID = 32
 
+OVSDB_ADDR = 'tcp:127.0.0.1:6640'
+ovs_vsctl = vsctl.VSCtl(OVSDB_ADDR)
+
 BASE_URL = '/qos'
-REQUIREMENTS = {'switchid': SWITCHID_PATTERN,
-                'vlanid': VLANID_PATTERN}
+REQUIREMENTS = {'switchid': SWITCHID_PATTERN + r'|[0-9]',
+                'vlanid': VLANID_PATTERN,
+                'queue_id': r'[0-9]{1,255}|all',
+                'rule_id': r'[0-9]{1,255}|all',
+                'meter_id': r'[0-9]{1,255}|all'}
 
 LOG = logging.getLogger(__name__)
 
@@ -345,14 +231,14 @@ class RestQoSAPI(app_manager.RyuApp):
         self.stats_reply_handler(ev)
 
 
-class QoSOfsList(dict):
+class QosOFList(dict):
 
     def __init__(self):
-        super(QoSOfsList, self).__init__()
+        super(QosOFList, self).__init__()
 
     def get_ofs(self, dp_id):
         if len(self) == 0:
-            raise ValueError('qos sw is not connected.')
+            raise ValueError('QoS Switch is not connected.')
 
         dps = {}
         if dp_id == REST_ALL:
@@ -361,12 +247,12 @@ class QoSOfsList(dict):
             try:
                 dpid = dpid_lib.str_to_dpid(dp_id)
             except:
-                raise ValueError('Invalid switchID.')
+                raise ValueError('Invalid Switch ID.')
 
             if dpid in self:
                 dps = {dpid: self[dpid]}
             else:
-                msg = 'qos sw is not connected. : switchID=%s' % dp_id
+                msg = 'QoS Switch is not connected. : switchID=%s' % dp_id
                 raise ValueError(msg)
 
         return dps
@@ -374,7 +260,7 @@ class QoSOfsList(dict):
 
 class QoSController(ControllerBase):
 
-    _OFS_LIST = QoSOfsList()
+    _OFS_LIST = QosOFList()
     _LOGGER = None
 
     def __init__(self, req, link, data, **config):
@@ -429,85 +315,87 @@ class QoSController(ControllerBase):
 
     @route('qos_switch', BASE_URL + '/queue/{switchid}',
            methods=['GET'], requirements=REQUIREMENTS)
-    def get_queue(self, req, switchid, **_kwargs):
+    def get_queue(self, req, switchid, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
                                    'get_queue', None)
 
     @route('qos_switch', BASE_URL + '/queue/{switchid}',
            methods=['POST'], requirements=REQUIREMENTS)
-    def set_queue(self, req, switchid, **_kwargs):
+    def set_queue(self, req, switchid, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
                                    'set_queue', None)
 
-    @route('qos_switch', BASE_URL + '/queue/{switchid}',
+    @route('qos_switch', BASE_URL + '/queue/{switchid}/{queue_id}',
            methods=['DELETE'], requirements=REQUIREMENTS)
-    def delete_queue(self, req, switchid, **_kwargs):
+    def delete_queue(self, req, switchid, queue_id, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
-                                   'delete_queue', None)
+                                   'delete_queue', None, queue_id = queue_id )
 
     @route('qos_switch', BASE_URL + '/queue/status/{switchid}',
            methods=['GET'], requirements=REQUIREMENTS)
-    def get_status(self, req, switchid, **_kwargs):
+    def get_status(self, req, switchid, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
                                    'get_status', self.waiters)
 
     @route('qos_switch', BASE_URL + '/rules/{switchid}',
            methods=['GET'], requirements=REQUIREMENTS)
-    def get_qos(self, req, switchid, **_kwargs):
+    def get_qos(self, req, switchid, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
                                    'get_qos', self.waiters)
 
     @route('qos_switch', BASE_URL + '/rules/{switchid}/{vlanid}',
            methods=['GET'], requirements=REQUIREMENTS)
-    def get_vlan_qos(self, req, switchid, vlanid, **_kwargs):
+    def get_vlan_qos(self, req, switchid, vlanid, **kwargs):
         return self._access_switch(req, switchid, vlanid,
                                    'get_qos', self.waiters)
 
     @route('qos_switch', BASE_URL + '/rules/{switchid}',
            methods=['POST'], requirements=REQUIREMENTS)
-    def set_qos(self, req, switchid, **_kwargs):
+    def set_qos(self, req, switchid, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
                                    'set_qos', self.waiters)
 
     @route('qos_switch', BASE_URL + '/rules/{switchid}/{vlanid}',
            methods=['POST'], requirements=REQUIREMENTS)
-    def set_vlan_qos(self, req, switchid, vlanid, **_kwargs):
+    def set_vlan_qos(self, req, switchid, vlanid, **kwargs):
         return self._access_switch(req, switchid, vlanid,
                                    'set_qos', self.waiters)
 
-    @route('qos_switch', BASE_URL + '/rules/{switchid}',
+    @route('qos_switch', BASE_URL + '/rules/{switchid}/{rule_id}',
            methods=['DELETE'], requirements=REQUIREMENTS)
-    def delete_qos(self, req, switchid, **_kwargs):
+    def delete_rule(self, req, switchid, rule_id, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
-                                   'delete_qos', self.waiters)
+                                   'delete_rule', self.waiters, rule_id=rule_id)
 
-    @route('qos_switch', BASE_URL + '/rules/{switchid}/{vlanid}',
-           methods=['DELETE'], requirements=REQUIREMENTS)
-    def delete_vlan_qos(self, req, switchid, vlanid, **_kwargs):
-        return self._access_switch(req, switchid, vlanid,
-                                   'delete_qos', self.waiters)
+    #@route('qos_switch', BASE_URL + '/rules/{switchid}/{vlanid}',
+    #       methods=['DELETE'], requirements=REQUIREMENTS)
+    #def delete_vlan_qos(self, req, switchid, vlanid, **_kwargs):
+    #    return self._access_switch(req, switchid, vlanid,
+    #                               'delete_qos', self.waiters)
 
     @route('qos_switch', BASE_URL + '/meter/{switchid}',
            methods=['GET'], requirements=REQUIREMENTS)
-    def get_meter(self, req, switchid, **_kwargs):
+    def get_meter(self, req, switchid, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
                                    'get_meter', self.waiters)
 
     @route('qos_switch', BASE_URL + '/meter/{switchid}',
            methods=['POST'], requirements=REQUIREMENTS)
-    def set_meter(self, req, switchid, **_kwargs):
+    def set_meter(self, req, switchid, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
                                    'set_meter', self.waiters)
 
-    @route('qos_switch', BASE_URL + '/meter/{switchid}',
+    @route('qos_switch', BASE_URL + '/meter/{switchid}/{meter_id}',
            methods=['DELETE'], requirements=REQUIREMENTS)
-    def delete_meter(self, req, switchid, **_kwargs):
+    def delete_meter(self, req, switchid, meter_id, **kwargs):
         return self._access_switch(req, switchid, VLANID_NONE,
-                                   'delete_meter', self.waiters)
+                                   'delete_meter', self.waiters, meter_id=meter_id)
 
-    def _access_switch(self, req, switchid, vlan_id, func, waiters):
+    def _access_switch(self, req, switchid, vlan_id, func, waiters, **kwargs):
+        switchid = switchid.zfill(16)
         try:
-            rest = req.json if req.body else {}
+            if req:
+                rest = req.json if req.body else {}
         except ValueError:
             QoSController._LOGGER.debug('invalid syntax %s', req.body)
             return Response(status=400)
@@ -523,9 +411,9 @@ class QoSController(ControllerBase):
             function = getattr(f_ofs, func)
             try:
                 if waiters is not None:
-                    msg = function(rest, vid, waiters)
+                    msg = function(rest, vid, waiters, **kwargs)
                 else:
-                    msg = function(rest, vid)
+                    msg = function(rest, switchid, vid)
             except ValueError as message:
                 return Response(status=400, body=str(message))
             msgs.append(msg)
@@ -585,6 +473,7 @@ class QoS(object):
 
     def set_ovsdb_addr(self, dpid, ovsdb_addr):
         # easy check if the address format valid
+        LOG.info("OVSDB_ADDR %r ", ovsdb_addr)
         _proto, _host, _port = ovsdb_addr.split(':')
 
         old_address = self.ovsdb_addr
@@ -595,9 +484,10 @@ class QoS(object):
                 self.ovs_bridge.del_controller()
                 self.ovs_bridge = None
             return
-        self.ovsdb_addr = ovsdb_addr
+        self.ovsdb_addr = OVSDB_ADDR
         if self.ovs_bridge is None:
-            ovs_bridge = bridge.OVSBridge(self.CONF, dpid, ovsdb_addr)
+            ovs_bridge = bridge.OVSBridge(self.CONF, dpid, OVSDB_ADDR)
+            #ovs_vsctl = vsctl.VSCtl(OVSDB_ADDR) #set OVSDB_ADDR
             self.ovs_bridge = ovs_bridge
             try:
                 ovs_bridge.init()
@@ -631,7 +521,7 @@ class QoS(object):
         return cookie & ofproto_v1_3_parser.UINT32_MAX
 
     # REST command template
-    def rest_command(func):
+    def rest_command(self, *func):
         def _rest_command(*args, **kwargs):
             key, value = func(*args, **kwargs)
             switch_id = dpid_lib.dpid_to_str(args[0].dp.id)
@@ -648,22 +538,30 @@ class QoS(object):
         return REST_COMMAND_RESULT, msgs
 
     @rest_command
-    def get_queue(self, rest, vlan_id):
+    def get_queue(self, rest, switch_id, vlan_id):
         if len(self.queue_list):
             msg = {'result': 'success',
                    'details': self.queue_list}
         else:
-            msg = {'result': 'failure',
-                   'details': 'Queue is not exists.'}
+            msg = {'result': 'fail',
+                   'details': 'Queue not created'}
 
         return REST_COMMAND_RESULT, msg
 
     @rest_command
-    def set_queue(self, rest, vlan_id):
+    def set_queue(self, rest, switch_id, vlan_id):
         if self.ovs_bridge is None:
-            msg = {'result': 'failure',
-                   'details': 'ovs_bridge is not exists'}
-            return REST_COMMAND_RESULT, msg
+            ovs_bridge = bridge.OVSBridge(self.CONF, switch_id, OVSDB_ADDR)
+            #ovs_vsctl = vsctl.VSCtl(OVSDB_ADDR) #set OVSDB_ADDR
+            self.ovs_bridge = ovs_bridge
+            try:
+                ovs_bridge.init()
+            except:
+                raise ValueError('Unable to set ovs_bridge in set_queue method')
+            #msg = {'result': 'fail',
+            #       'msg' : self.ovs_bridge,
+            #       'details': 'ovs_bridge not created'}
+            #return REST_COMMAND_RESULT, msg
 
         self.queue_list.clear()
         queue_type = rest.get(REST_QUEUE_TYPE, 'linux-htb')
@@ -691,7 +589,7 @@ class QoS(object):
 
         if port_name is not None:
             if port_name not in vif_ports:
-                raise ValueError('%s port is not exists' % port_name)
+                raise ValueError('%s port does not exist' % port_name)
             vif_ports = [port_name]
 
         for port_name in vif_ports:
@@ -717,12 +615,12 @@ class QoS(object):
         return True
 
     @rest_command
-    def delete_queue(self, rest, vlan_id):
+    def delete_queue(self, rest, queue_id, vlan_id):
         self.queue_list.clear()
         if self._delete_queue():
             msg = 'success'
         else:
-            msg = 'failure'
+            msg = 'failure: the queue has not been deleted'
 
         return REST_COMMAND_RESULT, msg
 
@@ -777,7 +675,7 @@ class QoS(object):
 
         qos_id = QoS._cookie_to_qosid(cookie)
         msg = {'result': 'success',
-               'details': 'QoS added. : qos_id=%d' % qos_id}
+               'details': 'QoS rule added : qos_id=%d' % qos_id}
 
         if vlan_id != VLANID_NONE:
             msg.setdefault(REST_VLANID, vlan_id)
@@ -811,15 +709,16 @@ class QoS(object):
         return REST_COMMAND_RESULT, get_data
 
     @rest_command
-    def delete_qos(self, rest, vlan_id, waiters):
+    def delete_rule(self, switchid, vlan_id, waiters, rule_id):
         try:
-            if rest[REST_QOS_ID] == REST_ALL:
+            #if rest[REST_QOS_ID] == REST_ALL:
+            if rule_id is None:
                 qos_id = REST_ALL
             else:
-                qos_id = int(rest[REST_QOS_ID])
+                #qos_id = int(rest[REST_QOS_ID])
+                qos_id = int(rule_id)
         except:
-            raise ValueError('Invalid qos id.')
-
+            raise ValueError('Invalid rule id')
         vlan_list = []
         delete_list = []
 
@@ -844,9 +743,9 @@ class QoS(object):
         self._update_vlan_list(vlan_list)
 
         if len(delete_list) == 0:
-            msg_details = 'QoS rule is not exist.'
+            msg_details = 'QoS rule does not exist'
             if qos_id != REST_ALL:
-                msg_details += ' : QoS ID=%d' % qos_id
+                msg_details += ' : QoS rule ID=%s' % qos_id
             msg = {'result': 'failure',
                    'details': msg_details}
         else:
@@ -867,7 +766,7 @@ class QoS(object):
             msg = []
             for vid, rule_ids in delete_ids.items():
                 del_msg = {'result': 'success',
-                           'details': ' deleted. : QoS ID=%s' % rule_ids}
+                           'details': ' The rule has been deleted : QoS ID=%s' % rule_ids}
                 if vid != VLANID_NONE:
                     del_msg.setdefault(REST_VLANID, vid)
                 msg.append(del_msg)
@@ -889,10 +788,10 @@ class QoS(object):
         try:
             self.ofctl.mod_meter_entry(self.dp, rest, cmd)
         except:
-            raise ValueError('Invalid meter parameter.')
+            raise ValueError('Invalid meter parameter')
 
         msg = {'result': 'success',
-               'details': 'Meter added. : Meter ID=%s' %
+               'details': 'The meter has been added : Meter ID=%s' %
                rest[REST_METER_ID]}
         return msg
 
@@ -906,20 +805,21 @@ class QoS(object):
         return REST_COMMAND_RESULT, msgs
 
     @rest_command
-    def delete_meter(self, rest, vlan_id, waiters):
+    def delete_meter(self, switchid, vlan_id, waiters, meter_id): #(self, req, switchid, meter_id, **_kwargs)
         if (self.version == ofproto_v1_0.OFP_VERSION or
                 self.version == ofproto_v1_2.OFP_VERSION):
             raise ValueError('delete_meter operation is not supported')
 
         cmd = self.dp.ofproto.OFPMC_DELETE
+        meter = {'meter_id': meter_id}
         try:
-            self.ofctl.mod_meter_entry(self.dp, rest, cmd)
+            self.ofctl.mod_meter_entry(self.dp, meter, cmd)
         except:
-            raise ValueError('Invalid meter parameter.')
+            raise ValueError('Invalid meter parameter')
 
         msg = {'result': 'success',
-               'details': 'Meter deleted. : Meter ID=%s' %
-               rest[REST_METER_ID]}
+               'details': 'The meter has been deleted : Meter ID=%s' %
+               meter_id}
         return REST_COMMAND_RESULT, msg
 
     def _to_of_flow(self, cookie, priority, match, actions):
@@ -946,8 +846,9 @@ class Match(object):
     _CONVERT = {REST_DL_TYPE:
                 {REST_DL_TYPE_ARP: ether.ETH_TYPE_ARP,
                  REST_DL_TYPE_IPV4: ether.ETH_TYPE_IP,
-                 REST_DL_TYPE_IPV6: ether.ETH_TYPE_IPV6},
-                REST_NW_PROTO:
+                 REST_DL_TYPE_IPV6: ether.ETH_TYPE_IPV6,
+                 REST_DL_TYPE_LLDP: ether.ETH_TYPE_LLDP},
+		REST_NW_PROTO:
                 {REST_NW_PROTO_TCP: inet.IPPROTO_TCP,
                  REST_NW_PROTO_UDP: inet.IPPROTO_UDP,
                  REST_NW_PROTO_ICMP: inet.IPPROTO_ICMP,
@@ -1063,7 +964,7 @@ class Match(object):
                 if value in Match._CONVERT[key]:
                     match.setdefault(key, Match._CONVERT[key][value])
                 else:
-                    raise ValueError('Invalid rule parameter. : key=%s' % key)
+                    raise ValueError('Invalid rule parameter: key=%s' % key)
             else:
                 match.setdefault(key, value)
 
@@ -1143,6 +1044,6 @@ class Action(object):
                     actions.append({REST_ACTION_QUEUE: queue_value.group(1)})
             action = {REST_ACTION: actions}
         else:
-            action = {REST_ACTION: 'Unknown action type.'}
+            action = {REST_ACTION: 'Unknown action type'}
 
         return action

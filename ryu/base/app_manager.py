@@ -60,6 +60,7 @@ def _lookup_service_brick_by_mod_name(mod_name):
 def register_app(app):
     assert isinstance(app, RyuApp)
     assert app.name not in SERVICE_BRICKS
+    LOG.info("app.name: %s", app.name)
     SERVICE_BRICKS[app.name] = app
     register_instance(app)
 
@@ -86,7 +87,7 @@ def require_app(app_name, api_style=False):
     m._REQUIRED_APP = getattr(m, '_REQUIRED_APP', [])
     m._REQUIRED_APP.append(app_name)
     LOG.debug('require_app: %s is required by %s', app_name, m.__name__)
-
+    
 
 class RyuApp(object):
     """
@@ -130,6 +131,7 @@ class RyuApp(object):
     """
 
     OFP_VERSIONS = None
+    #OFP_VERSION = ofproto_v1_3.OFP_VERSION
     """
     A list of supported OpenFlow versions for this RyuApp.
     The default is all versions supported by the framework.
@@ -270,7 +272,7 @@ class RyuApp(object):
         Returns the received reply.
         The argument should be an instance of EventRequestBase.
         """
-
+        LOG.info('Sending RPC request: %s', req)
         assert isinstance(req, EventRequestBase)
         req.sync = True
         req.reply_q = hub.Queue()
@@ -310,8 +312,8 @@ class RyuApp(object):
         if name in SERVICE_BRICKS:
             if isinstance(ev, EventRequestBase):
                 ev.src = self.name
-            LOG.debug("EVENT %s->%s %s",
-                      self.name, name, ev.__class__.__name__)
+            #LOG.info("EVENT %s->%s %s",
+            #          self.name, name, ev.__class__.__name__)
             SERVICE_BRICKS[name]._send_event(ev, state)
         else:
             LOG.debug("EVENT LOST %s->%s %s",

@@ -1,21 +1,40 @@
-# Copyright (C) 2012 Nippon Telegraph and Telephone Corporation.
-# Copyright (C) 2012 Isaku Yamahata <yamahata at private email ne jp>
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# -*- coding: utf-8 -*-
+#  Copyright 2016-2018 Universitat Politècnica de València
+#  Copyright 2016-2018 Università della Calabria
+#  Copyright 2016-2018 Prodevelop, SL
+#  Copyright 2016-2018 Technische Universiteit Eindhoven
+#  Copyright 2016-2018 Fundación de la Comunidad Valenciana para la 
+#  Investigación, Promoción y Estudios Comerciales de Valenciaport
+#  Copyright 2016-2018 Rinicom Ltd
+#  Copyright 2016-2018 Association pour le développement de la formation 
+#  professionnelle dans le transport
+#  Copyright 2016-2018 Noatum Ports Valenciana, S.A.U.
+#  Copyright 2016-2018 XLAB razvoj programske opreme in svetovanje d.o.o.
+#  Copyright 2016-2018 Systems Research Institute Polish Academy of Sciences
+#  Copyright 2016-2018 Azienda Sanitaria Locale TO5
+#  Copyright 2016-2018 Alessandro Bassi Consulting SARL
+#  Copyright 2016-2018 Neways Technologies B.V.
+#  
+#  See the NOTICE file distributed with this work for additional information
+#  regarding copyright ownership.
+#  
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#  
+#      http://www.apache.org/licenses/LICENSE-2.0
+#  
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
 import inspect
 from types import MethodType
+
+
+import logging
 
 from routes import Mapper
 from routes.util import URLGenerator
@@ -50,6 +69,7 @@ CONF.register_cli_opts([
 HEX_PATTERN = r'0x[0-9a-z]+'
 DIGIT_PATTERN = r'[1-9][0-9]*'
 
+LOG = logging.getLogger('ryu.app.wsgi')
 
 def route(name, path, methods=None, requirements=None):
     def _route(controller_method):
@@ -75,6 +95,7 @@ class Request(webob_Request):
     def __init__(self, environ, charset=DEFAULT_CHARSET, *args, **kwargs):
         super(Request, self).__init__(
             environ, charset=charset, *args, **kwargs)
+        self.headers['Access-Control-Allow-Origin']='*'
 
 
 class Response(webob_Response):
@@ -88,6 +109,8 @@ class Response(webob_Response):
 
     def __init__(self, charset=DEFAULT_CHARSET, *args, **kwargs):
         super(Response, self).__init__(charset=charset, *args, **kwargs)
+        # MODIFIED DIRECTLY IN THE WEBOB RESPONSE.PY LIB
+
 
 
 class WebSocketRegistrationWrapper(object):
@@ -259,10 +282,38 @@ class WSGIApplication(object):
         self.registory = {}
         self._wsmanager = WebSocketManager()
         super(WSGIApplication, self).__init__()
+        
+    def debug_print_mapper(self):
+        
+        def format_methods(r):
+            if r.conditions:
+                method = r.conditions.get('method', '')
+                return type(method) is str and method or ', '.join(method)
+            else:
+                return ''
+                
+        table = [('Route name', 'Methods', 'Path', 'Controller', 'action')] + \
+                [(r.name or '', format_methods(r), r.routepath or '',
+                  r.defaults.get('controller', ''), r.defaults.get('action', ''))
+                 for r in self.mapper.matchlist]
+        col_width = 25
+        output = ''
+        for k in range(0,len(table)):
+            for i in range(0,len(table[k])):
+                output += str(table[k][i])
+                space_left = col_width - len(str(table[k][i]))
+                if space_left > 0:
+                    for j in range(0,space_left):
+                        output += ' '
+            output += '\n'
+
 
     def _match(self, req):
         # Note: Invoke the new API, first. If the arguments unmatched,
         # invoke the old API.
+        
+        #self.debug_print_mapper()
+        
         try:
             return self.mapper.match(environ=req.environ)
         except TypeError:
@@ -279,12 +330,12 @@ class WSGIApplication(object):
         req.start_response = start_response
         req.urlvars = match
         link = URLGenerator(self.mapper, req.environ)
-
         data = None
         name = match['controller'].__name__
+
         if name in self.registory:
             data = self.registory[name]
-
+        
         controller = match['controller'](req, link, data, **self.config)
         controller.parent = self
         return controller(req)

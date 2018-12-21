@@ -33,6 +33,7 @@ $ sudo mn --controller=remote --topo linear,2
 > {"id": 2, "jsonrpc": "2.0", "result": ""}
 ...
 """  # noqa
+import logging
 
 from socket import error as SocketError
 from tinyrpc.exc import InvalidReplyError
@@ -48,6 +49,7 @@ from ryu.base import app_manager
 from ryu.topology import event, switches
 from ryu.controller.handler import set_ev_cls
 
+LOG = logging.getLogger('ryu.app.ws_topology')
 
 class WebSocketTopology(app_manager.RyuApp):
     _CONTEXTS = {
@@ -87,6 +89,8 @@ class WebSocketTopology(app_manager.RyuApp):
     def _event_host_add_handler(self, ev):
         msg = ev.host.to_dict()
         self._rpc_broadcall('event_host_add', msg)
+    
+    
 
     def _rpc_broadcall(self, func_name, msg):
         disconnected_clients = []
